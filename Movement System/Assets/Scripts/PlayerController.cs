@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     {
         move = playerControls.Player.Move;
         move.Enable();
+
+        
     }
 
     private void OnDisable()
