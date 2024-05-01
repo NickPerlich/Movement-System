@@ -8,9 +8,11 @@ public class PlayerController : MonoBehaviour
     public Rigidbody rb;
     public float moveSpeed = 5f;
     public PlayerControls playerControls;
-
+    public int jumpForce = 10;
+   
     private Vector2 moveDirection = Vector2.zero;
     private InputAction move;
+    private InputAction jump;
 
     private void Awake()
     {
@@ -22,12 +24,15 @@ public class PlayerController : MonoBehaviour
         move = playerControls.Player.Move;
         move.Enable();
 
-        
+        jump = playerControls.Player.Jump;
+        jump.Enable();
+        jump.performed += Jump;
     }
 
     private void OnDisable()
     {
         move.Disable();
+        jump.Disable();
     }
 
     // Start is called before the first frame update
@@ -44,6 +49,14 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector3(moveDirection.x * moveSpeed, 0, moveDirection.y * moveSpeed);
+        rb.velocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+    }
+
+    private void Jump(InputAction.CallbackContext context)
+    {
+        if (transform.position.y < 0.6)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
     }
 }
