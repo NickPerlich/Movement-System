@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveDirection = Vector2.zero;
     private InputAction move;
     private InputAction jump;
+    private InputAction sprint;
 
     private void Awake()
     {
@@ -27,12 +28,18 @@ public class PlayerController : MonoBehaviour
         jump = playerControls.Player.Jump;
         jump.Enable();
         jump.performed += Jump;
+
+        sprint = playerControls.Player.Sprint;
+        sprint.Enable();
+        sprint.performed += Sprint;
+        sprint.canceled += EndSprint; 
     }
 
     private void OnDisable()
     {
         move.Disable();
         jump.Disable();
+        sprint.Disable();
     }
 
     // Start is called before the first frame update
@@ -58,5 +65,15 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
+    }
+
+    private void Sprint(InputAction.CallbackContext context)
+    {
+        moveSpeed *= 1.5f;
+    }
+
+    private void EndSprint(InputAction.CallbackContext context)
+    {
+        moveSpeed /= 1.5f;
     }
 }
