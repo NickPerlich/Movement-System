@@ -5,15 +5,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    public Rigidbody rb;
-    public float moveSpeed = 5f;
-    public PlayerControls playerControls;
-    public int jumpForce = 10;
-   
+    [SerializeField] private Rigidbody rb;
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private PlayerControls playerControls;
+    [SerializeField] private int jumpForce = 5;
+    [SerializeField] private GameObject standingModel;
+    [SerializeField] private GameObject crouchingModel;
     private Vector2 moveDirection = Vector2.zero;
+    
     private InputAction move;
     private InputAction jump;
     private InputAction sprint;
+    private InputAction crouch;
 
     private void Awake()
     {
@@ -31,8 +34,13 @@ public class PlayerController : MonoBehaviour
 
         sprint = playerControls.Player.Sprint;
         sprint.Enable();
-        sprint.performed += Sprint;
-        sprint.canceled += EndSprint; 
+        sprint.performed += StartSprint;
+        sprint.canceled += EndSprint;
+
+        crouch = playerControls.Player.Crouch;
+        crouch.Enable();
+        crouch.performed += StartCrouch;
+        crouch.canceled += EndCrouch;
     }
 
     private void OnDisable()
@@ -40,6 +48,7 @@ public class PlayerController : MonoBehaviour
         move.Disable();
         jump.Disable();
         sprint.Disable();
+        crouch.Disable();
     }
 
     // Start is called before the first frame update
@@ -61,13 +70,13 @@ public class PlayerController : MonoBehaviour
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (transform.position.y < 0.6)
+        if (transform.position.y == 0)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
 
-    private void Sprint(InputAction.CallbackContext context)
+    private void StartSprint(InputAction.CallbackContext context)
     {
         moveSpeed *= 1.5f;
     }
@@ -75,5 +84,17 @@ public class PlayerController : MonoBehaviour
     private void EndSprint(InputAction.CallbackContext context)
     {
         moveSpeed /= 1.5f;
+    }
+
+    private void StartCrouch(InputAction.CallbackContext context)
+    {
+        crouchingModel.SetActive(true);
+        standingModel.SetActive(false);
+    }
+
+    private void EndCrouch(InputAction.CallbackContext context)
+    {
+        standingModel.SetActive(true);
+        crouchingModel.SetActive(false);
     }
 }
