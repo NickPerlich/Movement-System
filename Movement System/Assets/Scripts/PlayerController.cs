@@ -7,12 +7,18 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private Rigidbody rb;
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private PlayerControls playerControls;
     [SerializeField] private int jumpForce = 5;
     [SerializeField] private GameObject standingModel;
     [SerializeField] private GameObject crouchingModel;
+    [SerializeField] private GameObject cameraPosition;
+    [SerializeField] private GameObject orientation;
+    private float standingCamHeight;
+    private const float CrouchCameraHeight = 0.375f;
+    [SerializeField] private float rotationSpeed = 0.15f;
+
     private Vector2 moveDirection = Vector2.zero;
-    
+    private PlayerControls playerControls;
+
     private InputAction move;
     private InputAction jump;
     private InputAction sprint;
@@ -21,6 +27,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         playerControls = new PlayerControls();
+        standingCamHeight = cameraPosition.transform.position.y;
     }
 
     private void OnEnable()
@@ -52,13 +59,13 @@ public class PlayerController : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         moveDirection = move.ReadValue<Vector2>();
     }
@@ -66,6 +73,9 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         rb.velocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation, Quaternion.Euler(0, orientation.transform.eulerAngles.y, 0), rotationSpeed
+            );
     }
 
     private void Jump(InputAction.CallbackContext context)
@@ -90,11 +100,21 @@ public class PlayerController : MonoBehaviour
     {
         crouchingModel.SetActive(true);
         standingModel.SetActive(false);
+        cameraPosition.transform.position = new Vector3(
+                cameraPosition.transform.position.x,
+                CrouchCameraHeight,
+                cameraPosition.transform.position.z
+            );
     }
 
     private void EndCrouch(InputAction.CallbackContext context)
     {
         standingModel.SetActive(true);
         crouchingModel.SetActive(false);
+        cameraPosition.transform.position = new Vector3(
+                cameraPosition.transform.position.x,
+                standingCamHeight,
+                cameraPosition.transform.position.z
+            );
     }
 }
