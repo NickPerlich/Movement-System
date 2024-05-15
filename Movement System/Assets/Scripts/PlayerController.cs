@@ -5,14 +5,27 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private Rigidbody rb;
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private PlayerControls playerControls;
-    [SerializeField] private int jumpForce = 5;
-    [SerializeField] private GameObject standingModel;
-    [SerializeField] private GameObject crouchingModel;
+    [SerializeField] 
+    private Rigidbody rb;
+    [SerializeField] 
+    private float moveSpeed = 5f;
+    [SerializeField] 
+    private int jumpForce = 5;
+    [SerializeField] 
+    private GameObject standingModel;
+    [SerializeField] 
+    private GameObject crouchingModel;
+    [SerializeField] 
+    private GameObject cameraPosition;
+    [SerializeField] 
+    private GameObject orientation;
+
+    private const float StandingCameraHeight = 0.75f;
+    private const float CrouchCameraHeight = 0.375f;
+
     private Vector2 moveDirection = Vector2.zero;
-    
+    private PlayerControls playerControls;
+
     private InputAction move;
     private InputAction jump;
     private InputAction sprint;
@@ -39,8 +52,8 @@ public class PlayerController : MonoBehaviour
 
         crouch = playerControls.Player.Crouch;
         crouch.Enable();
-        crouch.performed += StartCrouch;
-        crouch.canceled += EndCrouch;
+        crouch.performed += Crouch;
+        crouch.canceled += Uncrouch;
     }
 
     private void OnDisable()
@@ -52,25 +65,30 @@ public class PlayerController : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         moveDirection = move.ReadValue<Vector2>();
     }
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+        Vector3 newLocalVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+
+        // using orientation's transform as local space, transforms the direction of newLocalVelocity into global space
+        Vector3 newGlobalVelocity = orientation.transform.TransformDirection(newLocalVelocity);
+
+        rb.velocity = newGlobalVelocity;
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (transform.position.y == 0)
+        if (transform.position.y <= 0)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
@@ -86,15 +104,15 @@ public class PlayerController : MonoBehaviour
         moveSpeed /= 1.5f;
     }
 
-    private void StartCrouch(InputAction.CallbackContext context)
+    private void Crouch(InputAction.CallbackContext context)
     {
-        crouchingModel.SetActive(true);
-        standingModel.SetActive(false);
+        Vector3 crouchCamPos = new Vector3(0, CrouchCameraHeight, 0);
+        cameraPosition.transform.localPosition = crouchCamPos;
     }
 
-    private void EndCrouch(InputAction.CallbackContext context)
+    private void Uncrouch(InputAction.CallbackContext context)
     {
-        standingModel.SetActive(true);
-        crouchingModel.SetActive(false);
+        Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
+        cameraPosition.transform.localPosition = standingCamPos;
     }
 }
