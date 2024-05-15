@@ -12,7 +12,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] 
     private float sensY;
     [SerializeField]
-    private Transform orientation;
+    private Transform cameraOrientation;
     [SerializeField]
     float timerLength;
     [SerializeField]
@@ -63,7 +63,7 @@ public class PlayerCamera : MonoBehaviour
 
             //rotate camera and orientation
             transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
-            orientation.localRotation = Quaternion.Euler(0, yRotation, 0);
+            cameraOrientation.localRotation = Quaternion.Euler(0, yRotation, 0);
         }
     }
 }

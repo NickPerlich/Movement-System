@@ -12,13 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private int jumpForce = 5;
     [SerializeField] 
-    private GameObject standingModel;
-    [SerializeField] 
-    private GameObject crouchingModel;
-    [SerializeField] 
-    private GameObject cameraPosition;
-    [SerializeField] 
-    private GameObject orientation;
+    private GameObject cameraOrientation;
 
     private const float StandingCameraHeight = 0.75f;
     private const float CrouchCameraHeight = 0.375f;
@@ -80,8 +74,8 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 newLocalVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
 
-        // using orientation's transform as local space, transforms the direction of newLocalVelocity into global space
-        Vector3 newGlobalVelocity = orientation.transform.TransformDirection(newLocalVelocity);
+        // using cameraPosition's transform as local space, transforms the direction of newLocalVelocity into global space
+        Vector3 newGlobalVelocity = cameraOrientation.transform.TransformDirection(newLocalVelocity);
 
         rb.velocity = newGlobalVelocity;
     }
@@ -107,12 +101,12 @@ public class PlayerController : MonoBehaviour
     private void Crouch(InputAction.CallbackContext context)
     {
         Vector3 crouchCamPos = new Vector3(0, CrouchCameraHeight, 0);
-        cameraPosition.transform.localPosition = crouchCamPos;
+        cameraOrientation.transform.localPosition = crouchCamPos;
     }
 
     private void Uncrouch(InputAction.CallbackContext context)
     {
         Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
-        cameraPosition.transform.localPosition = standingCamPos;
+        cameraOrientation.transform.localPosition = standingCamPos;
     }
 }
