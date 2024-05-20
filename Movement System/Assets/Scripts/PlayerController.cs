@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    // settables
     [SerializeField] 
     private Rigidbody rb;
     [SerializeField] 
@@ -14,12 +15,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private GameObject cameraOrientation;
 
+    // private floats
     private const float StandingCameraHeight = 0.75f;
     private const float CrouchCameraHeight = 0.375f;
 
+    // private vector2s
     private Vector2 moveDirection = Vector2.zero;
-    private PlayerControls playerControls;
+    
+    // private bools
+    private bool isGrounded;
 
+    // player input actions
+    private PlayerControls playerControls;
     private InputAction move;
     private InputAction jump;
     private InputAction sprint;
@@ -61,7 +68,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        
+        isGrounded = true;
     }
 
     // Update is called once per frame
@@ -72,19 +79,34 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector3 newLocalVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+        Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+        rb.velocity = TransformPlayerDirection(newVelocity);
+    }
 
-        // using cameraPosition's transform as local space, transforms the direction of newLocalVelocity into global space
-        Vector3 newGlobalVelocity = cameraOrientation.transform.TransformDirection(newLocalVelocity);
+    // input: a vector in the player's local space
+    // output: a vector in global space with the meaning of the input vector
+    private Vector3 TransformPlayerDirection(Vector3 vector)
+    {
+        return cameraOrientation.transform.TransformDirection(vector);
+    }
 
-        rb.velocity = newGlobalVelocity;
+    private void OnCollisionEnter(Collision collision)
+    {
+        bool isWall = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.up)) <= 0.1f;
+        bool isGround = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.forward)) <= 0.1f;
+
+        if (isGround && !isGrounded)
+        {
+            isGrounded = true;
+        }
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (transform.position.y <= 0)
+        if (isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
         }
     }
 
@@ -109,4 +131,5 @@ public class PlayerController : MonoBehaviour
         Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
         cameraOrientation.transform.localPosition = standingCamPos;
     }
+
 }
