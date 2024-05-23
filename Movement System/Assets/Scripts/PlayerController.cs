@@ -14,16 +14,17 @@ public class PlayerController : MonoBehaviour
     private int jumpForce = 5;
     [SerializeField] 
     private GameObject cameraOrientation;
+    private WallRun wr;
 
     // private floats
     private const float StandingCameraHeight = 0.75f;
     private const float CrouchCameraHeight = 0.375f;
 
     // private vector2s
-    private Vector2 moveDirection = Vector2.zero;
+    public Vector2 moveDirection = Vector2.zero;
     
-    // private bools
-    private bool isGrounded;
+    // public bools
+    public bool isGrounded;
 
     // player input actions
     private PlayerControls playerControls;
@@ -69,36 +70,46 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         isGrounded = true;
+        wr = gameObject.GetComponent<WallRun>();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        moveDirection = move.ReadValue<Vector2>();
+        moveDirection = GetInput();
+        wr.WallRunInput();
     }
 
     private void FixedUpdate()
     {
-        Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
-        rb.velocity = TransformPlayerDirection(newVelocity);
-    }
-
-    // input: a vector in the player's local space
-    // output: a vector in global space with the meaning of the input vector
-    private Vector3 TransformPlayerDirection(Vector3 vector)
-    {
-        return cameraOrientation.transform.TransformDirection(vector);
+        if (!wr.isWallRunning)
+        {
+            Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+            rb.velocity = TransformPlayerDirection(newVelocity);
+        }
+        wr.CheckForWall();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        bool isWall = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.up)) <= 0.1f;
         bool isGround = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.forward)) <= 0.1f;
 
         if (isGround && !isGrounded)
         {
             isGrounded = true;
         }
+    }
+
+    // input: a vector in the player's local space
+    // output: a vector in global space with the meaning of the input vector
+    public Vector3 TransformPlayerDirection(Vector3 vector)
+    {
+        return cameraOrientation.transform.TransformDirection(vector);
+    }
+
+    private Vector2 GetInput()
+    {
+        return move.ReadValue<Vector2>();
     }
 
     private void Jump(InputAction.CallbackContext context)
