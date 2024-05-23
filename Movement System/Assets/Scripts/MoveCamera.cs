@@ -5,7 +5,7 @@ using UnityEngine;
 public class MoveCamera : MonoBehaviour
 {
     [SerializeField] 
-    private Transform camPos;
+    private Transform camOrientation;
 
     private void Start()
     {
@@ -15,7 +15,7 @@ public class MoveCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = camPos.position;
-        transform.rotation = camPos.rotation;
+        transform.position = camOrientation.position;
+        transform.rotation = camOrientation.rotation;
     }
 }

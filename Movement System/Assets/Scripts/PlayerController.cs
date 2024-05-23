@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    // settables
     [SerializeField] 
     private Rigidbody rb;
     [SerializeField] 
@@ -12,20 +13,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private int jumpForce = 5;
     [SerializeField] 
-    private GameObject standingModel;
-    [SerializeField] 
-    private GameObject crouchingModel;
-    [SerializeField] 
-    private GameObject cameraPosition;
-    [SerializeField] 
-    private GameObject orientation;
+    private GameObject cameraOrientation;
+    private WallRun wr;
 
+    // private floats
     private const float StandingCameraHeight = 0.75f;
     private const float CrouchCameraHeight = 0.375f;
 
-    private Vector2 moveDirection = Vector2.zero;
-    private PlayerControls playerControls;
+    // private vector2s
+    public Vector2 moveDirection = Vector2.zero;
+    
+    // public bools
+    public bool isGrounded;
 
+    // player input actions
+    private PlayerControls playerControls;
     private InputAction move;
     private InputAction jump;
     private InputAction sprint;
@@ -67,30 +69,55 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        
+        isGrounded = true;
+        wr = gameObject.GetComponent<WallRun>();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        moveDirection = move.ReadValue<Vector2>();
+        moveDirection = GetInput();
+        wr.WallRunInput();
     }
 
     private void FixedUpdate()
     {
-        Vector3 newLocalVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+        if (!wr.isWallRunning)
+        {
+            Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
+            rb.velocity = TransformPlayerDirection(newVelocity);
+        }
+        wr.CheckForWall();
+    }
 
-        // using orientation's transform as local space, transforms the direction of newLocalVelocity into global space
-        Vector3 newGlobalVelocity = orientation.transform.TransformDirection(newLocalVelocity);
+    private void OnCollisionEnter(Collision collision)
+    {
+        bool isGround = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.forward)) <= 0.1f;
 
-        rb.velocity = newGlobalVelocity;
+        if (isGround && !isGrounded)
+        {
+            isGrounded = true;
+        }
+    }
+
+    // input: a vector in the player's local space
+    // output: a vector in global space with the meaning of the input vector
+    public Vector3 TransformPlayerDirection(Vector3 vector)
+    {
+        return cameraOrientation.transform.TransformDirection(vector);
+    }
+
+    private Vector2 GetInput()
+    {
+        return move.ReadValue<Vector2>();
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (transform.position.y <= 0)
+        if (isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
         }
     }
 
@@ -107,12 +134,13 @@ public class PlayerController : MonoBehaviour
     private void Crouch(InputAction.CallbackContext context)
     {
         Vector3 crouchCamPos = new Vector3(0, CrouchCameraHeight, 0);
-        cameraPosition.transform.localPosition = crouchCamPos;
+        cameraOrientation.transform.localPosition = crouchCamPos;
     }
 
     private void Uncrouch(InputAction.CallbackContext context)
     {
         Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
-        cameraPosition.transform.localPosition = standingCamPos;
+        cameraOrientation.transform.localPosition = standingCamPos;
     }
+
 }
