@@ -704,7 +704,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: ed520df0b302c4a4f945811ca8b9ca55, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -744,7 +744,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.535, z: 0}
-  m_LocalScale: {x: 5.6934, y: 1, z: 11.262114}
+  m_LocalScale: {x: 33.653687, y: 1, z: 36.561325}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 506002597}
@@ -1050,6 +1050,7 @@ GameObject:
   - component: {fileID: 1550515773}
   - component: {fileID: 1550515768}
   - component: {fileID: 1550515774}
+  - component: {fileID: 1550515775}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1074,6 +1075,9 @@ MonoBehaviour:
   jumpForce: 3
   cameraOrientation: {fileID: 1040727951}
   moveDirection: {x: 0, y: 0}
+  isGrounded: 0
+  isCrouching: 0
+  isSprinting: 0
 --- !u!4 &1550515772
 Transform:
   m_ObjectHideFlags: 0
@@ -1133,14 +1137,32 @@ MonoBehaviour:
   whatIsWall:
     serializedVersion: 2
     m_Bits: 8
-  wallRunForce: 50
+  wallRunForce: 20
   maxWallRunTime: 2
-  maxWallSpeed: 30
+  maxWallSpeed: 10
   isWallRunning: 0
   forward: {x: 0, y: 0, z: 0}
   cameraOrientation: {fileID: 1040727952}
   rb: {fileID: 1550515773}
   playerCam: {fileID: 963194228}
+--- !u!114 &1550515775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550515767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a469660427971144985d82446bbe390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSliding: 0
+  rb: {fileID: 1550515773}
+  slideForce: 50
+  maxSlideSpeed: 100
+  maxSlideTime: 2
+  slideTimer: 0
 --- !u!1 &1966645748
 GameObject:
   m_ObjectHideFlags: 0
