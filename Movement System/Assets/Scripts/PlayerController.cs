@@ -14,7 +14,10 @@ public class PlayerController : MonoBehaviour
     private int jumpForce = 5;
     [SerializeField] 
     private GameObject cameraOrientation;
+    
+    // script references
     private WallRun wr;
+    private SlideManager sm;
 
     // private floats
     private const float StandingCameraHeight = 0.75f;
@@ -25,6 +28,8 @@ public class PlayerController : MonoBehaviour
     
     // public bools
     public bool isGrounded;
+    public bool isCrouching;
+    public bool isSprinting;
 
     // player input actions
     private PlayerControls playerControls;
@@ -71,18 +76,22 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = true;
         wr = gameObject.GetComponent<WallRun>();
+        sm = gameObject.GetComponent<SlideManager>();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        moveDirection = GetInput();
-        wr.WallRunInput();
+        if (!sm.isSliding)
+        {
+            moveDirection = GetInput();
+            wr.WallRunInput();
+        }
     }
 
     private void FixedUpdate()
     {
-        if (!wr.isWallRunning)
+        if (!wr.isWallRunning && !sm.isSliding)
         {
             Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
             rb.velocity = TransformPlayerDirection(newVelocity);
@@ -123,22 +132,32 @@ public class PlayerController : MonoBehaviour
 
     private void StartSprint(InputAction.CallbackContext context)
     {
-        moveSpeed *= 1.5f;
+        if (!isCrouching && isGrounded)
+        {
+            moveSpeed *= 1.5f;
+            isSprinting = true;
+        }
     }
 
     private void EndSprint(InputAction.CallbackContext context)
     {
         moveSpeed /= 1.5f;
+        isSprinting = false;
     }
 
     private void Crouch(InputAction.CallbackContext context)
     {
+        isCrouching = true;
+        transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
+        rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         Vector3 crouchCamPos = new Vector3(0, CrouchCameraHeight, 0);
         cameraOrientation.transform.localPosition = crouchCamPos;
     }
 
     private void Uncrouch(InputAction.CallbackContext context)
     {
+        isCrouching = false;
+        transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
         Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
         cameraOrientation.transform.localPosition = standingCamPos;
     }
