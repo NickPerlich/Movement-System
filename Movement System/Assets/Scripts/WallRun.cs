@@ -5,8 +5,7 @@ using UnityEngine;
 public class WallRun : MonoBehaviour
 {
     public LayerMask whatIsWall;
-    public float wallRunForce, maxWallRunTime, maxWallSpeed;
-    public bool isWallRunning;
+    public bool isWallRunning, isWallClimbing;
     public Vector3 forward;
 
     [SerializeField]
@@ -15,9 +14,14 @@ public class WallRun : MonoBehaviour
     private Rigidbody rb;
     [SerializeField]
     private Transform playerCam;
+    [SerializeField]
+    private float wallRunForce, maxWallRunTime, maxWallSpeed;
+    [SerializeField]
+    private float wallClimbForce, maxWallClimbTime, maxWallClimbSpeed;
 
     private PlayerController pc;
-    private bool hitWall, isWallRight, isWallLeft;
+    private bool hitWall, isWallRight, isWallLeft, isWallFront;
+    private Vector3 wallNormalVector;
 
     // Start is called before the first frame update
     private void Start()
@@ -40,9 +44,13 @@ public class WallRun : MonoBehaviour
         {
             Wallrun();
         }
+        else if (hitWall && isWallFront)
+        {
+            WallClimb();
+        }
     }
 
-    public void Wallrun()
+    private void Wallrun()
     {
         isWallRunning = true;
         rb.useGravity = false;
@@ -65,25 +73,50 @@ public class WallRun : MonoBehaviour
         }
     }
 
-    public void StopWallRun()
+    private void StopWallRun()
     {
         rb.useGravity = true;
         isWallRunning = false;
+    }
+
+    private void WallClimb()
+    {
+        isWallClimbing = true;
+        rb.useGravity = false;
+
+        if (rb.velocity.magnitude <= maxWallClimbSpeed)
+        {
+            rb.AddForce(Vector3.up * wallClimbForce * Time.fixedDeltaTime);
+            rb.AddForce(-wallNormalVector * wallClimbForce / 5 * Time.fixedDeltaTime);
+        }
+    }
+
+    private void StopWallClimb()
+    {
+        rb.useGravity = true;
+        isWallClimbing = false;
     }
 
     public void CheckForWall()
     {
         isWallRight = Physics.Raycast(transform.position, cameraOrientation.right, 1f, whatIsWall);
         isWallLeft = Physics.Raycast(transform.position, -cameraOrientation.right, 1f, whatIsWall);
+        isWallFront = Physics.Raycast(transform.position, cameraOrientation.forward, 1f, whatIsWall);
 
         if (!isWallLeft && !isWallRight)
         {
             StopWallRun();
         }
+
+        if (!isWallFront)
+        {
+            StopWallClimb();
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        hitWall = Mathf.Abs(Vector3.Dot(collision.GetContact(0).normal, Vector3.up)) <= 0.1f;
+        wallNormalVector = collision.GetContact(0).normal;
+        hitWall = Mathf.Abs(Vector3.Dot(wallNormalVector, Vector3.up)) <= 0.1f;
     }
 }
