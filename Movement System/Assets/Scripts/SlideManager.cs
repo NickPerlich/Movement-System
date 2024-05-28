@@ -48,7 +48,8 @@ public class SlideManager : MonoBehaviour
     {
         isSliding = true;
         slideTimer = maxSlideTime;
-        slideDirection = pc.TransformPlayerDirection(new Vector3(pc.moveDirection.x, 0, pc.moveDirection.y));
+        Vector3 localDirection = new Vector3(pc.moveDirection.x, 0, pc.moveDirection.y);
+        slideDirection = pc.TransformPlayerDirection(localDirection); 
         Slide();
     }
 
