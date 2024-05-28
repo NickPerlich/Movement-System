@@ -47,6 +47,8 @@ public class PlayerController : MonoBehaviour
     {
         move = playerControls.Player.Move;
         move.Enable();
+        move.performed += Move;
+        move.canceled += Stop;
 
         jump = playerControls.Player.Jump;
         jump.Enable();
@@ -84,14 +86,15 @@ public class PlayerController : MonoBehaviour
     {
         if (!sm.isSliding)
         {
-            moveDirection = GetInput();
             wr.WallRunInput();
         }
     }
 
     private void FixedUpdate()
     {
-        if (!wr.isWallRunning && !sm.isSliding)
+        bool canWalk = !wr.isWallClimbing && !wr.isWallRunning && !sm.isSliding;
+
+        if (canWalk)
         {
             Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
             rb.velocity = TransformPlayerDirection(newVelocity);
@@ -116,9 +119,14 @@ public class PlayerController : MonoBehaviour
         return cameraOrientation.transform.TransformDirection(vector);
     }
 
-    private Vector2 GetInput()
+    private void Move(InputAction.CallbackContext context)
     {
-        return move.ReadValue<Vector2>();
+        moveDirection = move.ReadValue<Vector2>();
+    }
+
+    private void Stop(InputAction.CallbackContext context)
+    {
+        moveDirection = Vector2.zero;
     }
 
     private void Jump(InputAction.CallbackContext context)
