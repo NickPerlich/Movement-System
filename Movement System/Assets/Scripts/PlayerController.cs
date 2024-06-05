@@ -13,10 +13,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private int jumpForce = 5;
     [SerializeField] 
-    private GameObject cameraOrientation;
+    private Transform cameraOrientation;
     
     // script references
-    private WallRun wr;
+    private WallActions wa;
     private SlideManager sm;
 
     // private floats
@@ -77,7 +77,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         isGrounded = true;
-        wr = gameObject.GetComponent<WallRun>();
+        wa = gameObject.GetComponent<WallActions>();
         sm = gameObject.GetComponent<SlideManager>();
     }
 
@@ -86,20 +86,20 @@ public class PlayerController : MonoBehaviour
     {
         if (!sm.isSliding)
         {
-            wr.WallRunInput();
+            wa.WallRunInput();
         }
     }
 
     private void FixedUpdate()
     {
-        bool canWalk = !wr.isWallClimbing && !wr.isWallRunning && !sm.isSliding;
+        bool canWalk = !wa.isWallClimbing && !wa.isWallRunning && !sm.isSliding;
 
         if (canWalk)
         {
             Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
             rb.velocity = TransformPlayerDirection(newVelocity);
         }
-        wr.CheckForWall();
+        wa.CheckForWall();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -112,11 +112,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // input: a vector in the player's local space
-    // output: a vector in global space with the meaning of the input vector
-    public Vector3 TransformPlayerDirection(Vector3 vector)
+    // This method transforms the given direction vector
+    // from the local space of the camera's transform to world space
+    // to allow for look-based movement
+    public Vector3 TransformPlayerDirection(Vector3 direction)
     {
-        return cameraOrientation.transform.TransformDirection(vector);
+        return cameraOrientation.TransformDirection(direction);
     }
 
     private void Move(InputAction.CallbackContext context)
@@ -159,7 +160,7 @@ public class PlayerController : MonoBehaviour
         transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
         rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         Vector3 crouchCamPos = new Vector3(0, CrouchCameraHeight, 0);
-        cameraOrientation.transform.localPosition = crouchCamPos;
+        cameraOrientation.localPosition = crouchCamPos;
     }
 
     private void Uncrouch(InputAction.CallbackContext context)
@@ -167,7 +168,7 @@ public class PlayerController : MonoBehaviour
         isCrouching = false;
         transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
         Vector3 standingCamPos = new Vector3(0, StandingCameraHeight, 0);
-        cameraOrientation.transform.localPosition = standingCamPos;
+        cameraOrientation.localPosition = standingCamPos;
     }
 
 }
