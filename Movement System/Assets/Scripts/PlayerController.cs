@@ -84,10 +84,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (!sm.isSliding)
-        {
-            wa.WallRunInput();
-        }
+        
     }
 
     private void FixedUpdate()
@@ -99,7 +96,6 @@ public class PlayerController : MonoBehaviour
             Vector3 newVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.y * moveSpeed);
             rb.velocity = TransformPlayerDirection(newVelocity);
         }
-        wa.CheckForWall();
     }
 
     private void OnCollisionEnter(Collision collision)

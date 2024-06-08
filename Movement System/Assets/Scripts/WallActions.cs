@@ -18,23 +18,28 @@ public class WallActions : MonoBehaviour
     [SerializeField]
     private float wallClimbForce, maxWallClimbTime, maxWallClimbSpeed;
 
-    private PlayerController pc;
+    private SlideManager sm;
     private bool hitWall, isWallRight, isWallLeft, isWallFront;
     private Vector3 wallNormalVector, wallRunDirection;
 
     // Start is called before the first frame update
     private void Start()
     {
-        pc = gameObject.GetComponent<PlayerController>();
+        sm = gameObject.GetComponent<SlideManager>();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        Ray local = new Ray(cameraOrientation.position, cameraOrientation.forward);
-        Ray global = new Ray(cameraOrientation.position, pc.TransformPlayerDirection(cameraOrientation.forward));
-        Debug.DrawLine(cameraOrientation.position, local.GetPoint(2), Color.white);
-        Debug.DrawLine(cameraOrientation.position, global.GetPoint(2), Color.black);
+        if (!sm.isSliding)
+        {
+            WallRunInput();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        CheckForWall();
     }
 
     public void WallRunInput()
